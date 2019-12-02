@@ -8,6 +8,7 @@ import { ensureKuromojiLoaded, createAutoAnnotatedText } from '../util/analysis'
 import { detectIso6393 } from '../util/languages';
 import { createTimeRangeChunk, createTimeRangeChunkSet } from '../util/chunk';
 import { extractAudio, extractFrameImage } from '../util/ffmpeg';
+import { readdirSync } from 'fs';
 
 const LOCAL_PREFIX = 'local:';
 
@@ -23,16 +24,20 @@ const SUBTITLE_NOLANG_EXTENSION_PATTERN = /(.*)\.(srt|vtt|ass)/i;
 
 const fs = window.require('fs-extra'); // use window to avoid webpack
 
-const listVideosRel = async (baseDir, relDir) => {
+// For performance, make sure to use all synchronous fs APIs
+// For some reason, using await with the async fs APIs is
+// really slow. This function went from taking ~500ms to <5ms
+// when switching from async to sync :o
+const listVideosRel = (baseDir, relDir) => {
   const result = [];
   const videoFiles = [];
   const subtitleFilesMap = new Map(); // base -> [fn]
 
-  const dirents = await fs.readdir(path.join(baseDir, relDir));
+  const dirents = fs.readdirSync(path.join(baseDir, relDir));
 
   for (const fn of dirents) {
     const absfn = path.join(baseDir, relDir, fn);
-    const stat = await fs.stat(absfn);
+    const stat = fs.lstatSync(absfn);
 
     if (!stat.isDirectory()) {
       const ext = path.extname(fn);
@@ -91,20 +96,13 @@ const listVideosRel = async (baseDir, relDir) => {
   return result;
 };
 
-const listDirs = async (dir) => {
-  const dirents = await fs.readdir(dir);
-  const result = [];
-
-  for (const fn of dirents) {
-    const absfn = path.join(dir, fn);
-    const stat = await fs.stat(absfn);
-
-    if (stat.isDirectory()) {
-      result.push(fn);
-    }
-  }
-
-  return result;
+// For performance, make sure to use all synchronous fs APIs
+// For some reason, using await with the async fs APIs is
+// really slow. This function went from taking >1s to 2.5ms
+// when switching from async to sync :o
+const listDirs = dir => {
+  return fs.readdirSync(dir)
+    .filter(fn => fs.lstatSync(path.join(dir, fn)).isDirectory());
 };
 
 export const getCollectionIndex = async (collectionLocator) => {
@@ -134,15 +132,15 @@ export const getCollectionIndex = async (collectionLocator) => {
     }
 
     // Look in directories
-    for (const dir of await listDirs(baseDirectory)) {
-      const vids = await listVideosRel(baseDirectory, dir);
+    console.time('listDirs');
+    const dirs = listDirs(baseDirectory);
+    console.timeEnd('listDirs');
 
-      // There may be season dirs, look for those
-      for (const subDir of await listDirs(path.join(baseDirectory, dir))) {
-        if (subDir.startsWith('Season')) {
-          vids.push(...await listVideosRel(baseDirectory, path.join(dir, subDir)));
-        }
-      }
+    for (const dir of dirs) {
+      console.log(dir);
+      console.time('listVideosRel');
+      const vids = listVideosRel(baseDirectory, dir);
+      console.timeEnd('listVideosRel');
 
       if (vids.length === 0) {
         continue;

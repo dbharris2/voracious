@@ -75,33 +75,32 @@ export default class MainActions {
   initializeState = async () => {
     this.state.set(new MainStateRecord());
 
-    this._setLoadingMessage('Loading profile...');
+    // Initialize the storage asynchronously so that we don't block app startup.
+    // Once that's done, load the profile from the storage.
+    // The dictionaries are not needed for app startup and can happen on the fly,
+    // but the profile is ultimately needed. So let's load the dictionaries
+    // once the profile has been loaded.
+    console.time('Load storage');
+    createStorageBackend().then(storage => {
+      console.timeEnd('Load storage');
+      this.storage = storage;
 
-    this.storage = await createStorageBackend();
+      console.time('Load profile');
+      this._storageLoadProfile().then(() => {
+        console.timeEnd('Load profile');
 
-    await this._storageLoadProfile();
-
-    if (!process.argv.includes('--nodicts')) {
-      this._setLoadingMessage('Loading dictionaries...');
-
-      await this._loadDictionaries(progressMsg => {
-        this._setLoadingMessage(progressMsg);
+        console.time('Load dicts');
+        this._loadDictionaries(progressMsg => {}).then(() =>
+          console.timeEnd('Load dicts'),
+        );
       });
-    }
-
-    this._clearLoadingMessage();
-  };
-
-  _clearLoadingMessage = (msg) => {
-    this.state.set(this.state.get().set('modalLoadingMessage', null));
-  };
-
-  _setLoadingMessage = (msg) => {
-    this.state.set(this.state.get().set('modalLoadingMessage', msg));
+    });
   };
 
   _addCollection = async (name, locator) => {
+    console.time('getCollectionIndex');
     const collectionIndex = await getCollectionIndex(locator);
+    console.timeEnd('getCollectionIndex');
 
     const collectionVideoRecords = []; // [k, v] pairs
     for (const vid of collectionIndex.videos) {
@@ -143,9 +142,13 @@ export default class MainActions {
     if (profileStr) {
       const profile = jpar(profileStr);
 
-      for (const col of profile.collections) {
-        await this._addCollection(col.name, col.locator);
-      }
+      console.time('add collections');
+      const addCollectionPromises = profile.collections.map(col =>
+        this._addCollection(col.name, col.locator),
+      );
+      Promise.all(addCollectionPromises).then(() =>
+        console.timeEnd('add collections'),
+      );
 
       this.state.set(this.state.get().setIn(['preferences', 'showRuby'], profile.preferences.showRuby));
       this.state.set(this.state.get().setIn(['preferences', 'showHelp'], profile.preferences.showHelp));

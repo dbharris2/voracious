@@ -10,11 +10,11 @@ let kuromojiTokenizer = null;
 let kuromojiLoadPromise = null;
 
 export const startLoadingKuromoji = () => {
-  console.log('Loading Kuromoji ...');
+  console.time('startLoadingKuromoji');
   const dicPath = window.location.href.startsWith('file:') ? './kuromoji/dict/' : '/kuromoji/dict/';
   kuromojiLoadPromise = new Promise(resolve =>
     kuromoji.builder({ dicPath }).build(function (err, tokenizer) {
-      console.log('Kuromoji loaded');
+      console.timeEnd('startLoadingKuromoji');
       kuromojiTokenizer = tokenizer;
       resolve();
     })

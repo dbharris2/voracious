@@ -13,8 +13,13 @@ class ElectronSqliteBackend {
   }
 
   async initialize() {
+    console.time('db open');
     await db.open(this.dbFilename);
+    console.timeEnd('db open');
+
+    console.time('db create table');
     await db.run('CREATE TABLE IF NOT EXISTS kv (k TEXT PRIMARY KEY, v TEXT)');
+    console.timeEnd('db create table');
   }
 
   async getItemMaybe(key) {
