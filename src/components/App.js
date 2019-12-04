@@ -43,13 +43,53 @@ class App extends Component {
               if (collection === null || collection === undefined) {
                 return <div></div>;
               }
-              return <Player video={collection.videos.get(videoId)} onExit={() => { history.goBack(); }} onUpdatePlaybackPosition={(pos) => { actions.saveVideoPlaybackPosition(collectionLocator, videoId, pos); }} onNeedSubtitles={() => { actions.loadSubtitlesIfNeeded(collectionLocator, videoId); }} getSavedPlaybackPosition={() => { return actions.loadVideoPlaybackPosition(collectionLocator, videoId); }} onSetPreference={(pref, value) => { actions.setPreference(pref, value); }} preferences={mainState.preferences} sortFilterSubtitleTracksMap={actions.sortFilterSubtitleTracksMap} searchDictionaries={actions.searchDictionaries} onExtractAudio={(startTime, endTime) => extractAudioFromVideo(collectionLocator, videoId, startTime, endTime)} onExtractFrameImage={(time) => extractFrameImageFromVideo(collectionLocator, videoId, time)} ankiPrefs={mainState.preferences.anki} />;
+              return (
+                <Player 
+                  video={collection.videos.get(videoId)} 
+                  onExit={() => history.goBack()} 
+                  onUpdatePlaybackPosition={(pos) => { 
+                    actions.saveVideoPlaybackPosition(collectionLocator, videoId, pos); 
+                  }} 
+                  onNeedSubtitles={() =>
+                    actions.loadSubtitlesIfNeeded(collectionLocator, videoId)
+                  } 
+                  getSavedPlaybackPosition={() =>
+                    actions.loadVideoPlaybackPosition(collectionLocator, videoId)
+                  } 
+                  onSetPreference={(pref, value) => { 
+                    actions.setPreference(pref, value); 
+                  }} 
+                  preferences={mainState.preferences} 
+                  sortFilterSubtitleTracksMap={actions.sortFilterSubtitleTracksMap} 
+                  searchDictionaries={actions.searchDictionaries} 
+                  onExtractAudio={(startTime, endTime) => 
+                    extractAudioFromVideo(collectionLocator, videoId, startTime, endTime)
+                  } 
+                  onExtractFrameImage={(time) => 
+                    extractFrameImageFromVideo(collectionLocator, videoId, time)
+                  } 
+                  ankiPrefs={mainState.preferences.anki} 
+                />
+              );
             }}/>
             <Route path="/add_collection" render={({ history }) => {
-              return <AddCollection onAdd={(name, dir) => { actions.addLocalCollection(name, dir); history.replace('/library'); }} onExit={() => { history.goBack(); }} />;
+              return (
+                <AddCollection 
+                  onAdd={(name, dir) => { 
+                    actions.addLocalCollection(name, dir); 
+                    history.replace('/library'); 
+                  }} 
+                  onExit={() => history.goBack()}  
+                />
+              );
             }}/>
             <Route path="/import_epwing" render={({ history }) => {
-              return <ImportEpwing onExit={() => { history.goBack(); }} onReloadDictionaries={actions.reloadDictionaries} />;
+              return (
+                <ImportEpwing 
+                  onExit={() => history.goBack()} 
+                  onReloadDictionaries={actions.reloadDictionaries} 
+                />
+              );
             }}/>
             <Route render={({ history }) => (
               <WidthWrapper>
