@@ -4,7 +4,7 @@ import jschardet from 'jschardet';
 import iconv from 'iconv-lite';
 
 import { parseSRT, parseVTT, parseASS } from '../util/subtitleParsing';
-import { ensureKuromojiLoaded, createAutoAnnotatedText } from '../util/analysis';
+import { createAutoAnnotatedText } from '../util/analysis';
 import { detectIso6393 } from '../util/languages';
 import { createTimeRangeChunk, createTimeRangeChunkSet } from '../util/chunk';
 import { extractAudio, extractFrameImage } from '../util/ffmpeg';
@@ -235,7 +235,6 @@ const loadSubtitleTrackFromFile = async (filename) => {
   const language = detectIso6393(combinedText);
 
   // Create time-indexed subtitle track
-  await ensureKuromojiLoaded(); // wait until kuromoji has loaded
   const chunks = [];
   for (const sub of subs) {
     const annoText = await createAutoAnnotatedText(sub.lines, language);

@@ -9,7 +9,7 @@ const dmp = new DiffMatchPatch();
 let kuromojiTokenizer = null;
 let kuromojiLoadPromise = null;
 
-export const startLoadingKuromoji = () => {
+const startLoadingKuromoji = () => {
   console.time('startLoadingKuromoji');
   const dicPath = window.location.href.startsWith('file:') ? './kuromoji/dict/' : '/kuromoji/dict/';
   kuromojiLoadPromise = new Promise(resolve =>
@@ -21,7 +21,7 @@ export const startLoadingKuromoji = () => {
   );
 };
 
-export const ensureKuromojiLoaded = async () => {
+const ensureKuromojiLoaded = async () => {
   if (!kuromojiLoadPromise) {
     startLoadingKuromoji();
   }
