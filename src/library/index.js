@@ -214,7 +214,9 @@ export const getCollectionIndex = async (collectionLocator) => {
 const loadSubtitleTrackFromFile = async (filename) => {
   console.time('loadSubtitleTrackFromFile ' + filename);
 
-  const rawData = await fs.readFile(filename);
+  console.time('readFile');
+  const rawData = fs.readFileSync(filename);
+  console.timeEnd('readFile');
   const encodingGuess = jschardet.detect(rawData.toString('binary'));
   console.log('loadSubtitleTrackFromFile guessed encoding', encodingGuess);
   const data = iconv.decode(rawData, encodingGuess.encoding);
