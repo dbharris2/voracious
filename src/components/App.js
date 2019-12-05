@@ -112,24 +112,10 @@ class App extends Component {
                           <div className="App-collection-header">
                             <h2 className="App-collection-header-title"><a href="/library" onClick={e => {e.preventDefault(); history.goBack();}} className="App-back-to-library-link">{collection.name}</a> / {title.name}</h2>
                           </div>
-                          {title.parts.seasonEpisodes.length ? (
+                          {title.episodes.length ? (
                             <ul>
-                              {title.parts.seasonEpisodes.map(se => (
-                                <VideoListItem collection={collection} videoId={se.videoId} name={'Season ' + se.seasonNumber + ' Episode ' + se.episodeNumber} key={se.videoId} />
-                              ))}
-                            </ul>
-                          ) : null}
-                          {title.parts.episodes.length ? (
-                            <ul>
-                              {title.parts.episodes.map(ep => (
-                                <VideoListItem collection={collection} videoId={ep.videoId} name={'Episode ' + ep.episodeNumber} key={ep.videoId} />
-                              ))}
-                            </ul>
-                          ) : null}
-                          {title.parts.others.length ? (
-                            <ul>
-                              {title.parts.others.map(other => (
-                                <VideoListItem collection={collection} videoId={other.videoId} name={other.name} key={other.name} />
+                              {title.episodes.map(episode => (
+                                <VideoListItem collection={collection} videoId={episode.videoId} name={episode.name} key={episode.name} />
                               ))}
                             </ul>
                           ) : null}
@@ -152,16 +138,13 @@ class App extends Component {
                               <div className="App-collection-id">{collection.locator}</div>
                             </div>
                             <ul>
-                              {collection.titles.map(title => title.series ? (
+                              {collection.titles.map(title => (
                                   <li key={title.name} className="App-library-list-item">
                                     <Link to={'/library/' + encodeURIComponent(collection.locator) + '/' + encodeURIComponent(title.name)}>
-                                      {title.name} <span style={{color: 'grey'}}>[{title.parts.count}]</span>
+                                      {title.name} <span style={{color: 'grey'}}>[{title.episodes.length}]</span>
                                     </Link>
                                   </li>
-                                ) : (
-                                  <VideoListItem collection={collection} videoId={title.videoId} name={title.name} key={title.name} />
-                                )
-                              )}
+                                ))}
                             </ul>
                           </li>
                         ))}

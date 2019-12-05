@@ -43,9 +43,7 @@ const CollectionRecord = new Record({
 
 const TitleRecord = new Record({
   name: undefined,
-  series: undefined,
-  videoId: undefined, // only defined if not a series
-  parts: undefined, // only defined if a series
+  episodes: [], 
 });
 
 const VideoRecord = new Record({
@@ -122,9 +120,7 @@ export default class MainActions {
     for (const title of collectionIndex.titles) {
       collectionTitleRecords.push(new TitleRecord({
         name: title.name,
-        series: title.series,
-        videoId: title.videoId, // only defined if not a series
-        parts: title.parts, // only defined if a series
+        episodes: title.episodes,
       }));
     }
 

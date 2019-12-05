@@ -17,8 +17,6 @@ const SUPPORTED_VIDEO_EXTENSIONS = [
   '.mkv',
 ];
 
-const SEASON_EPISODE_PATTERN = /s([0-9]+)e([0-9]+)/i;
-const EPISODE_PATTERN = /ep([0-9]+)/i;
 const SUBTITLE_LANG_EXTENSION_PATTERN = /(.*)\.([a-zA-Z]{2,3})\.(srt|vtt|ass)/i;
 const SUBTITLE_NOLANG_EXTENSION_PATTERN = /(.*)\.(srt|vtt|ass)/i;
 
@@ -119,18 +117,6 @@ export const getCollectionIndex = async (collectionLocator) => {
       return result;
     }
 
-    // Look for videos directly in baseDirectory
-    const baseVideos = await listVideosRel(baseDirectory, '');
-    for (const vid of baseVideos) {
-      result.videos.push(vid);
-      result.titles.push({
-        name: vid.name,
-        series: false,
-        videoId: vid.id,
-        parts: null,
-      });
-    }
-
     // Look in directories
     console.time('listDirs');
     const dirs = listDirs(baseDirectory);
@@ -142,69 +128,19 @@ export const getCollectionIndex = async (collectionLocator) => {
       const vids = listVideosRel(baseDirectory, dir);
       console.timeEnd('listVideosRel');
 
-      if (vids.length === 0) {
-        continue;
-      }
-
-      for (const vid of vids) {
-        result.videos.push(vid);
-      }
-
-      if (vids.length === 1) { // TODO: also, if single vid, make sure it doesn't have season/episode name, otherwise it IS a series
-        result.titles.push({
-          name: dir,
-          series: false,
-          videoId: vids[0].id,
-          parts: null,
-        });
-      } else {
-        const seasonEpisodes = [];
-        const episodes = [];
-        const others = [];
-
-        for (const vid of vids) {
-          const seMatch = SEASON_EPISODE_PATTERN.exec(vid.name);
-          if (seMatch) {
-            const sNum = +(seMatch[1]);
-            const eNum = +(seMatch[2]);
-            seasonEpisodes.push({
-              seasonNumber: sNum,
-              episodeNumber: eNum,
-              videoId: vid.id,
-            });
-          } else {
-            const eMatch = EPISODE_PATTERN.exec(vid.name);
-            if (eMatch) {
-              const eNum = +(eMatch[1]);
-              episodes.push({
-                episodeNumber: eNum,
-                videoId: vid.id,
-              });
-            } else {
-              others.push({
-                name: vid.name,
-                videoId: vid.id,
-              });
-            }
-          }
-        }
-
-        result.titles.push({
-          name: dir,
-          series: true,
-          videoId: null,
-          parts: {
-            seasonEpisodes,
-            episodes,
-            others,
-            count: vids.length,
-          },
-        });
-      }
+      vids.forEach(vid => result.videos.push(vid));
+      result.titles.push({
+        name: dir,
+        episodes: vids.map(vid => {
+          return {
+            name: vid.name,
+            videoId: vid.id,
+          };
+        }),
+      });
     }
 
     result.titles.sort((a, b) => (a.name.localeCompare(b.name)));
-
     return result;
   } else {
     throw new Error('internal error');
