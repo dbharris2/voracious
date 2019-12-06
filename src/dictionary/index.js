@@ -7,7 +7,9 @@ export { importEpwing } from './epwing';
 const fs = window.require('fs-extra'); // use window to avoid webpack
 
 const loadAndIndexYomichanZip = async (zipfn, builtin) => {
+  console.time('loadYomichanZip');
   const {name, termEntries} = await loadYomichanZip(zipfn);
+  console.timeEnd('loadYomichanZip');
   return {
     name,
     index: indexYomichanEntries(termEntries),
@@ -18,7 +20,7 @@ const loadAndIndexYomichanZip = async (zipfn, builtin) => {
 
 const scanDirForYomichanZips = async (dir, builtin) => {
   const result = [];
-  const dirents = await fs.readdir(dir);
+  const dirents = fs.readdirSync(dir);
   for (const dirent of dirents) {
     if (path.extname(dirent) === '.zip') {
       // Assume any zips are Yomichan dicts
@@ -30,17 +32,23 @@ const scanDirForYomichanZips = async (dir, builtin) => {
 };
 
 export const loadDictionaries = async () => {
+  console.time('loadDictionaries');
   const result = [];
 
   // Scan for built-in dictionaries
+  console.time('scanDirForYomichanZips');
   result.push(...await scanDirForYomichanZips(path.join(getResourcesPath(), 'dictionaries'), true));
+  console.timeEnd('scanDirForYomichanZips');
 
   // Scan for imported dictionaries
+  console.time('Scan for imported dictionaries');
   const importedPath = path.join(getUserDataPath(), 'dictionaries');
   if (await fs.exists(importedPath)) {
     result.push(...await scanDirForYomichanZips(path.join(getUserDataPath(), 'dictionaries'), false));
   }
+  console.timeEnd('Scan for imported dictionaries');
 
+  console.timeEnd('loadDictionaries');
   return result;
 };
 

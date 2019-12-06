@@ -8,7 +8,6 @@ import { createAutoAnnotatedText } from '../util/analysis';
 import { detectIso6393 } from '../util/languages';
 import { createTimeRangeChunk, createTimeRangeChunkSet } from '../util/chunk';
 import { extractAudio, extractFrameImage } from '../util/ffmpeg';
-import { readdirSync } from 'fs';
 
 const LOCAL_PREFIX = 'local:';
 

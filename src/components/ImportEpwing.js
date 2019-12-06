@@ -17,7 +17,6 @@ export default class ImportEpwing extends Component {
       epwingDirectory: undefined,
       importing: false,
       statusType: 'working',
-      statusText: '',
     };
 
     ipcRenderer.on('chose-directory', this.handleIpcChoseDirectory);
@@ -40,37 +39,21 @@ export default class ImportEpwing extends Component {
     this.setState({
       importing: true,
       statusType: 'working',
-      statusText: 'Importing ' + this.state.epwingDirectory + '... (may take a while)',
     });
 
     try {
       await importEpwing(this.state.epwingDirectory);
-
-      await this.props.onReloadDictionaries(progressMsg => {
-        this.setState({
-          statusText: 'Reloading dictionaries: ' + progressMsg,
-        });
-      });
-
+      this.props.onReloadDictionaries();
       this.setState({
         importing: false,
         statusType: 'success',
-        statusText: 'EPWING imported successfully',
         epwingDirectory: undefined,
       });
     } catch (e) {
       console.log(e.message);
-      let statusText = 'Something went wrong';
-      if (e.message.includes('unrecognized dictionary format')) {
-        statusText = 'The folder you selected does not appear to be an EPWING dictionary';
-      } else if (e.message.includes('failed to find compatible extractor')) {
-        statusText = 'The EPWING you selected is not supported (see instructions above)';
-      }
-
       this.setState({
         importing: false,
         statusType: 'error',
-        statusText: statusText,
       });
     }
   };
@@ -84,7 +67,7 @@ export default class ImportEpwing extends Component {
         <br />
         <div>Folder: {this.state.epwingDirectory || <span><i>None selected</i></span>} <button disabled={this.state.importing} onClick={this.handleClickChooseDirectory}>Choose Folder</button></div>
         <br />
-        <div className={'ImportEpwing-status ImportEpwing-status-' + this.state.statusType}>{this.state.statusText}&nbsp;</div>
+        <div className={'ImportEpwing-status ImportEpwing-status-' + this.state.statusType}>&nbsp;</div>
         <br />
         <div>
           <Button disabled={!this.state.epwingDirectory || this.state.importing} onClick={this.handleImport}>Import Selected Folder</Button>&nbsp;

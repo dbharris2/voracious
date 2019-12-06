@@ -2,12 +2,13 @@ import JSZip from 'jszip';
 
 const fs = window.require('fs-extra');
 
-const loadBank = async (zip, bankName, dictName) => {
+const loadBank = async (zip) => {
+  console.time('loadBank');
   let num = 1;
   const parts = [];
 
   while (true) {
-    const fn = `${bankName}_bank_${num}.json`;
+    const fn = `term_bank_${num}.json`;
     if (!zip.files[fn]) {
       break;
     }
@@ -16,13 +17,13 @@ const loadBank = async (zip, bankName, dictName) => {
   }
 
   const entries = parts.reduce((acc, val) => acc.concat(val), []);
-
+  console.timeEnd('loadBank');
   return entries;
 };
 
 export const loadYomichanZip = async (fn) => {
   console.time('load yomichan zip ' + fn);
-  const data = await fs.readFile(fn);
+  const data = fs.readFileSync(fn);
   const zip = await JSZip.loadAsync(data);
   const keys = Object.keys(zip.files);
   keys.sort();
@@ -31,11 +32,11 @@ export const loadYomichanZip = async (fn) => {
   if (indexObj.format !== 3) {
     throw new Error('wrong format');
   }
-  if (!indexObj.sequenced) {
+  if (!indexObj.sequenced) { 
     throw new Error('not sequenced?');
   }
 
-  const termEntries = await loadBank(zip, 'term', indexObj.title);
+  const termEntries = await loadBank(zip);
   console.timeEnd('load yomichan zip ' + fn);
   return {
     name: indexObj.title,
@@ -44,9 +45,11 @@ export const loadYomichanZip = async (fn) => {
 };
 
 export const indexYomichanEntries = (subentries) => {
+  console.time('indexYomichanEntries');
   const sequenceToEntry = new Map(); // sequence (id) -> macro-entry object
   const wordOrReadingToSequences = new Map(); // string -> Set(sequence ids)
 
+  console.log('subentries.length ' + subentries.length);
   for (const subentry of subentries) {
     const word = subentry[0];
     const reading = subentry[1];
@@ -84,6 +87,7 @@ export const indexYomichanEntries = (subentries) => {
     }
   }
 
+  console.timeEnd('indexYomichanEntries');
   return {
     sequenceToEntry,
     wordOrReadingToSequences,
