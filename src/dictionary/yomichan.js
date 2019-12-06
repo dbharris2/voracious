@@ -2,7 +2,7 @@ import JSZip from 'jszip';
 
 const fs = window.require('fs-extra');
 
-const loadBank = async (zip, bankName, dictName, reportProgress) => {
+const loadBank = async (zip, bankName, dictName) => {
   let num = 1;
   const parts = [];
 
@@ -11,12 +11,7 @@ const loadBank = async (zip, bankName, dictName, reportProgress) => {
     if (!zip.files[fn]) {
       break;
     }
-
-    if (reportProgress) {
-      reportProgress('Loading ' + dictName + ' ' + fn + '...');
-    }
     parts.push(JSON.parse(await zip.files[fn].async('string')));
-
     num++;
   }
 
@@ -25,10 +20,7 @@ const loadBank = async (zip, bankName, dictName, reportProgress) => {
   return entries;
 };
 
-export const loadYomichanZip = async (fn, reportProgress) => {
-  if (reportProgress) {
-    reportProgress('Opening ' + fn + '...');
-  }
+export const loadYomichanZip = async (fn) => {
   console.time('load yomichan zip ' + fn);
   const data = await fs.readFile(fn);
   const zip = await JSZip.loadAsync(data);
@@ -43,7 +35,7 @@ export const loadYomichanZip = async (fn, reportProgress) => {
     throw new Error('not sequenced?');
   }
 
-  const termEntries = await loadBank(zip, 'term', indexObj.title, reportProgress);
+  const termEntries = await loadBank(zip, 'term', indexObj.title);
   console.timeEnd('load yomichan zip ' + fn);
   return {
     name: indexObj.title,

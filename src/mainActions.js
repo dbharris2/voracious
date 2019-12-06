@@ -88,7 +88,7 @@ export default class MainActions {
         console.timeEnd('Load profile');
 
         console.time('Load dicts');
-        this._loadDictionaries(progressMsg => {}).then(() =>
+        this._loadDictionaries().then(() =>
           console.timeEnd('Load dicts'),
         );
       });
@@ -333,8 +333,8 @@ export default class MainActions {
     await this._storageSaveProfile();
   };
 
-  _loadDictionaries = async (reportProgress) => {
-    const dictionaries = await loadDictionaries(reportProgress);
+  _loadDictionaries = async () => {
+    const dictionaries = await loadDictionaries();
 
     const items = [];
     for (const info of dictionaries) {
@@ -384,8 +384,8 @@ export default class MainActions {
     return results;
   };
 
-  reloadDictionaries = async (reportProgress) => {
-    await this._loadDictionaries(reportProgress);
+  reloadDictionaries = async () => {
+    await this._loadDictionaries();
   };
 
   deleteDictionary = async (name) => {
