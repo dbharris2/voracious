@@ -9,6 +9,10 @@ import ErrorDisplay from './components/ErrorDisplay';
 import MainActions from './mainActions';
 import { SubscribableState, StateMapper } from './ruxx';
 
+// Load Kuromoji right away
+import { startLoadingKuromoji } from './util/analysis';
+startLoadingKuromoji();
+
 // Set some last-ditch error handlers
 const { ipcRenderer } = window.require('electron'); // use window to avoid webpack
 
